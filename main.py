@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all origins
 
-@app.route('/remove_background', methods=['POST'])
+@app.route('/', methods=['POST'])
 def remove_background():
     if 'file' not in request.files:
         return jsonify({'success': False, 'error': 'No file provided'})
