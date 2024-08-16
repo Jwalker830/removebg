@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_file
 from rembg import remove
 from flask_cors import CORS
 from io import BytesIO
+import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all origins
