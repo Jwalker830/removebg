@@ -14,6 +14,9 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
 
 @app.route('/', methods=['POST'])
 def remove_background():
