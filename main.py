@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from rembg import remove
@@ -8,6 +9,7 @@ app = Flask(__name__)
 # CORS configuration
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
+
 @app.route('/', methods=['POST'])
 def remove_background():
     if 'file' not in request.files:
@@ -15,20 +17,34 @@ def remove_background():
 
     file = request.files['file']
 
-    if file:
-        image_bytes = file.read()
-        processed_image = remove(image_bytes)
-        buffered = BytesIO(processed_image)
-        buffered.seek(0)
+    try:
+        if file:
+            # Read the image file as bytes
+            image_bytes = file.read()
 
-        return send_file(
-            buffered,
-            mimetype='image/png',
-            as_attachment=False,
-            download_name='processed_image.png'
-        )
+            # Process the image using rembg
+            processed_image = remove(image_bytes)
 
-    return jsonify({'success': False, 'error': 'Error processing file'})
+            # Create a BytesIO object to hold the processed image
+            buffered = BytesIO(processed_image)
+            buffered.seek(0)
+
+            # Return the processed image file directly
+            return send_file(
+                buffered,
+                mimetype='image/png',  # Adjust MIME type based on the output format
+                as_attachment=False,
+                download_name='processed_image.png'  # Optional: Specify the name of the file for download
+            )
+        else:
+            return jsonify({'success': False, 'error': 'No file uploaded'})
+
+    except Exception as e:
+        # Log the error and return a JSON response
+        app.logger.error(f'Error processing file: {e}')
+        return jsonify({'success': False, 'error': str(e)})
+
 
 if __name__ == '__main__':
-    app.run()
+    port = int(os.environ.get('PORT', 5000))  # Use PORT environment variable if available
+    app.run(host='0.0.0.0', port=port)
