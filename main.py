@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from rembg import remove
@@ -9,10 +10,15 @@ app = Flask(__name__)
 # CORS configuration
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 @app.route('/', methods=['POST'])
 def remove_background():
     if 'file' not in request.files:
+        logger.error('No file provided')
         return jsonify({'success': False, 'error': 'No file provided'})
 
     file = request.files['file']
@@ -37,11 +43,11 @@ def remove_background():
                 download_name='processed_image.png'  # Optional: Specify the name of the file for download
             )
         else:
+            logger.error('No file uploaded')
             return jsonify({'success': False, 'error': 'No file uploaded'})
 
     except Exception as e:
-        # Log the error and return a JSON response
-        app.logger.error(f'Error processing file: {e}')
+        logger.error(f'Error processing file: {e}')
         return jsonify({'success': False, 'error': str(e)})
 
 
