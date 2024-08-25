@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify, send_file
-from rembg import remove
 from flask_cors import CORS
+from rembg import remove
 from io import BytesIO
-import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all origins
+
+# CORS configuration
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 @app.route('/', methods=['POST'])
 def remove_background():
@@ -15,22 +16,16 @@ def remove_background():
     file = request.files['file']
 
     if file:
-        # Read the image file as bytes
         image_bytes = file.read()
-
-        # Process the image using rembg
         processed_image = remove(image_bytes)
-
-        # Create a BytesIO object to hold the processed image
         buffered = BytesIO(processed_image)
         buffered.seek(0)
 
-        # Return the processed image file directly
         return send_file(
             buffered,
-            mimetype='image/png',  # Adjust MIME type based on the output format
+            mimetype='image/png',
             as_attachment=False,
-            download_name='processed_image.png'  # Optional: Specify the name of the file for download
+            download_name='processed_image.png'
         )
 
     return jsonify({'success': False, 'error': 'Error processing file'})
