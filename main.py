@@ -1,9 +1,10 @@
 import os
 import logging
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from rembg import remove
 from io import BytesIO
+from PIL import Image  # Importing Image module from PIL
 
 app = Flask(__name__)
 
@@ -13,6 +14,19 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 # Configure logging
 logging.basicConfig(level=logging.INFO)  # Set to DEBUG for more detailed logs
 logger = logging.getLogger(__name__)
+
+def create_blank_favicon():
+    # Create a 1x1 pixel image
+    img = Image.new('RGBA', (1, 1), color=(0, 0, 0, 0))  # Transparent 1x1 image
+    buf = BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return buf
+
+@app.route('/favicon.ico')
+def favicon():
+    img = create_blank_favicon()
+    return Response(img, mimetype='image/x-icon')  # Use 'image/x-icon' for favicon
 
 # Top-level error handler
 @app.errorhandler(Exception)
