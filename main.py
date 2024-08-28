@@ -14,11 +14,16 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 logging.basicConfig(level=logging.INFO)  # Set to DEBUG for more detailed logs
 logger = logging.getLogger(__name__)
 
+# Top-level error handler
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Handle unexpected errors."""
+    logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+    return jsonify({'success': False, 'error': 'An unexpected error occurred. Please try again later.'}), 500
 
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'healthy'}), 200
-
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -57,7 +62,6 @@ def index():
         except Exception as e:
             logger.error(f'Error processing file: {e}')
             return jsonify({'success': False, 'error': str(e)})
-
 
 #if __name__ == '__main__':
     #port = int(os.environ.get('PORT', 5000))  # Use PORT environment variable if available
