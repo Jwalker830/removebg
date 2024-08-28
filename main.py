@@ -21,10 +21,6 @@ def handle_exception(e):
     logger.error(f"An unexpected error occurred: {e}", exc_info=True)
     return jsonify({'success': False, 'error': 'An unexpected error occurred. Please try again later.'}), 500
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'healthy'}), 200
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
@@ -63,6 +59,6 @@ def index():
             logger.error(f'Error processing file: {e}')
             return jsonify({'success': False, 'error': str(e)})
 
-#if __name__ == '__main__':
-    #port = int(os.environ.get('PORT', 5000))  # Use PORT environment variable if available
-    #app.run(host='0.0.0.0', port=port)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))  # Use PORT environment variable if available
+    app.run(host='0.0.0.0', port=port)
