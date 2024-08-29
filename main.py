@@ -2,11 +2,13 @@ import os
 import logging
 import signal
 import sys
+import threading
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from rembg import remove
 from io import BytesIO
 from PIL import Image
+import time
 
 app = Flask(__name__)
 
@@ -87,6 +89,18 @@ def index():
         except Exception as e:
             logger.error(f'Error processing file: {e}')
             return jsonify({'success': False, 'error': str(e)})
+
+# Background task
+def background_task():
+    while True:
+        logger.info("Background task is running...")
+        # Your code to execute when there are no requests
+        time.sleep(10)  # Sleep for 10 seconds between iterations
+
+# Start the background task in a separate thread
+thread = threading.Thread(target=background_task)
+thread.daemon = True
+thread.start()
 
 #if __name__ == '__main__':
 #    port = int(os.environ.get('PORT', 8080))  # Changed port to 8080
