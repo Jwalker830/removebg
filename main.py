@@ -1,10 +1,12 @@
 import os
 import logging
+import signal
+import sys
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from rembg import remove
 from io import BytesIO
-from PIL import Image  # Importing Image module from PIL
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -14,6 +16,14 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 # Configure logging
 logging.basicConfig(level=logging.INFO)  # Set to DEBUG for more detailed logs
 logger = logging.getLogger(__name__)
+
+# Graceful shutdown handling
+def handle_shutdown(signum, frame):
+    logger.info(f"Received shutdown signal: {signum}. Shutting down gracefully...")
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, handle_shutdown)
+signal.signal(signal.SIGINT, handle_shutdown)
 
 def create_blank_favicon():
     # Create a 1x1 pixel image
@@ -34,6 +44,11 @@ def handle_exception(e):
     """Handle unexpected errors."""
     logger.error(f"An unexpected error occurred: {e}", exc_info=True)
     return jsonify({'success': False, 'error': 'An unexpected error occurred. Please try again later.'}), 500
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint."""
+    return jsonify({"status": "healthy"}), 200
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -73,6 +88,6 @@ def index():
             logger.error(f'Error processing file: {e}')
             return jsonify({'success': False, 'error': str(e)})
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Use PORT environment variable if available
-    app.run(host='0.0.0.0', port=port)
+#if __name__ == '__main__':
+#    port = int(os.environ.get('PORT', 8080))  # Changed port to 8080
+#    app.run(host='0.0.0.0', port=port)
